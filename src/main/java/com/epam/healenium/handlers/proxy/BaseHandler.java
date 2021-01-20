@@ -94,10 +94,28 @@ public abstract class BaseHandler implements InvocationHandler {
     protected List<WebElement> lookUpElements(PageAwareBy key) {
         try {
             List<WebElement> elements = driver.findElements(key.getBy());
-            if (elements.isEmpty()) {
+           // getSavedElementsByHash()
+            // findElements
+            // getSavedElementsByHash
+            // saveIfNotDuplicate
+            // TODO Если есть найденные элементы и нет сохраненных, то сохраняем в БД найденные по хэшу поиска,
+            // TODO   проводя дедупликацию и перезаписывая сохраненные рузультаты с каждым запуском
+            // findElements
+            // getSavedElementsByHash
+            // calcDiff
+            // TODO Найденные элементы сравниваем с сохранёнными (выбираем из БД по хэшу поиска)
+            // startHealingForAllNonEquals
+            // TODO Если найденные элементы не совпадают с сохраненными, то запускаем
+            // TODO   процесс хилинга для каждого несосвпадающего найденного (нет среди сохраненных) или сохраненного
+            // TODO   (нет среди найденных + ) элемента
+            // saveHealed
+            // TODO Перезаписываем сохраненные элементы найденными с учетом указанного пользователем признака успешности
+
+            if (needHealing(elements)) {
                 throw new NoSuchElementException("Failed to find elements");
             }
             for(WebElement element : elements) {
+                // TODO посмотреть, что ещё нужно сохранять в БД
                 engine.savePath(key, element);
             }
             return elements;
@@ -105,6 +123,10 @@ public abstract class BaseHandler implements InvocationHandler {
             log.warn("Failed to find elements using locator {}\nReason: {}\nTrying to heal...", key.getBy().toString(), e.getMessage());
             return healingService.healElements(key, e).orElseThrow(() -> e);
         }
+    }
+
+    private boolean needHealing(List<WebElement> elements) {
+        return elements.isEmpty() ? true : false;
     }
 
     /**
