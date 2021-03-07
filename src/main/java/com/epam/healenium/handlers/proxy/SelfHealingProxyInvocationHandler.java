@@ -19,12 +19,11 @@ import org.openqa.selenium.WebDriver.TargetLocator;
 import org.openqa.selenium.WebElement;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 public class SelfHealingProxyInvocationHandler extends BaseHandler {
@@ -42,7 +41,7 @@ public class SelfHealingProxyInvocationHandler extends BaseHandler {
                     WebElement element = findElement((By) args[0]);
                     return Optional.ofNullable(element).map(it -> wrapElement(it, loader)).orElse(null);
                 case "findElements":
-                    List<WebElement> elements = findElements((By) args[0]);;
+                    List<WebElement> elements = findElements((By) args[0]);
                     return elements.stream().map(it -> wrapElement(it, loader)).collect(Collectors.toList());
                 case "getCurrentEngine":
                     return engine;
@@ -64,6 +63,16 @@ public class SelfHealingProxyInvocationHandler extends BaseHandler {
         } catch (Exception ex) {
             throw ex.getCause();
         }
+    }
+
+    private List<WebElement> getWelbElementsByScript(Object invokeResult) {
+        if (invokeResult != null) {
+            if (invokeResult instanceof WebElement) {
+                return Arrays.asList((WebElement) invokeResult);
+            } else if (invokeResult instanceof Collections)
+                return (List<WebElement>) invokeResult;
+        }
+        return Collections.EMPTY_LIST;
     }
 
 }
