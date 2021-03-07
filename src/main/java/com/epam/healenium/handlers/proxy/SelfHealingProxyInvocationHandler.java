@@ -51,6 +51,13 @@ public class SelfHealingProxyInvocationHandler extends BaseHandler {
                 case "switchTo":
                     TargetLocator switched = (TargetLocator) method.invoke(driver, args);
                     return wrapTarget(switched, loader);
+                case "executeScript":
+                    Object invokeResult = method.invoke(driver, args);
+                    List<WebElement> resultElements = getWelbElementsByScript(invokeResult);
+                    if (!resultElements.isEmpty()) {
+                        return resultElements.stream().map(it -> wrapElement(it, loader)).collect(Collectors.toList());
+                    }
+                    return invokeResult;
                 default:
                     return method.invoke(driver, args);
             }
